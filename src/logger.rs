@@ -10,8 +10,6 @@ use std::time::Duration;
 pub struct Logger {
     instruction_references: u128,
     data_references: u128,
-    instruction_hits: u128,
-    data_hits: u128,
     instruction_misses: u128,
     data_misses: u128,
     memory_reads: u128,

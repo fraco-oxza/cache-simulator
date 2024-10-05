@@ -1,7 +1,6 @@
-use crate::cache::lru::LRU;
+use crate::cache::lru::Lru;
 use crate::cache::{
-    AccessType::*, CacheBlock, MapStrategy, MapStrategyFactory, MemoryAddress, WriteMissPolicy::*,
-    WritePolicy::*,
+    CacheBlock, MapStrategy, MapStrategyFactory, MemoryAddress,
 };
 use crate::WORD_SIZE;
 
@@ -10,7 +9,7 @@ pub struct FullyAssociativeFactory;
 impl MapStrategyFactory for FullyAssociativeFactory {
     fn generate(&self, block_size: usize, cache_size: usize) -> Box<dyn MapStrategy> {
         let block_mask_size = (block_size.ilog2() + WORD_SIZE.ilog2()) as usize;
-        let replacement_policy = LRU::new(cache_size);
+        let replacement_policy = Lru::new(cache_size);
 
         let map_strategy = FullyAssociative {
             block_mask_size,
@@ -23,7 +22,7 @@ impl MapStrategyFactory for FullyAssociativeFactory {
 
 pub struct FullyAssociative {
     block_mask_size: usize,
-    replacement_policy: LRU,
+    replacement_policy: Lru,
 }
 
 impl MapStrategy for FullyAssociative {

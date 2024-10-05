@@ -36,7 +36,7 @@ impl TraceSimulator {
 
             let instruction_number: u8 = splited.next().unwrap().parse()?;
             let address: MemoryAddress =
-                MemoryAddress::from_str_radix(&splited.next().unwrap(), 16)?;
+                MemoryAddress::from_str_radix(splited.next().unwrap(), 16)?;
 
             let instruction = match instruction_number {
                 0 => Read(Data),

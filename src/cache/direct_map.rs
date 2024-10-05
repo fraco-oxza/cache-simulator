@@ -1,6 +1,5 @@
 use crate::cache::{
-    AccessType::*, CacheBlock, MapStrategy, MapStrategyFactory, MemoryAddress, WriteMissPolicy::*,
-    WritePolicy::*,
+    CacheBlock, MapStrategy, MapStrategyFactory, MemoryAddress,
 };
 use crate::WORD_SIZE;
 
@@ -10,7 +9,7 @@ impl MapStrategyFactory for DirectMapFactory {
     fn generate(&self, block_size: usize, cache_size: usize) -> Box<dyn MapStrategy> {
         let block_mask_size = (block_size.ilog2() + WORD_SIZE.ilog2()) as usize;
         let cache_mask_size = cache_size.ilog2() as usize;
-        let tag_mask_size = size_of::<MemoryAddress>() * 8 - block_mask_size - cache_mask_size;
+        let tag_mask_size = MemoryAddress::BITS as usize - block_mask_size - cache_mask_size;
 
         let map_strategy = DirectMap {
             block_mask_size,

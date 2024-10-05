@@ -1,14 +1,14 @@
 use std::collections::VecDeque;
 
 #[derive(Clone)]
-pub struct LRU {
+pub struct Lru {
     nums: VecDeque<usize>,
 }
 
-impl LRU {
+impl Lru {
     pub fn new(size: usize) -> Self {
         Self {
-            nums: (0..size).into_iter().collect(),
+            nums: (0..size).collect(),
         }
     }
 

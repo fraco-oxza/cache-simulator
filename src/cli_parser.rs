@@ -13,6 +13,7 @@ pub struct ParsedArgs {
     pub write_policy: WritePolicy,
     pub write_miss_policy: WriteMissPolicy,
     pub map_strategy_factory: Box<dyn MapStrategyFactory>,
+    #[allow(dead_code)] // TODO: Implement this
     pub split_i_d: bool,
     pub file_path: PathBuf,
 }

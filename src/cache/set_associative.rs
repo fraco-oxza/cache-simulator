@@ -1,7 +1,6 @@
-use crate::cache::lru::LRU;
+use crate::cache::lru::Lru;
 use crate::cache::{
-    AccessType::*, CacheBlock, MapStrategy, MapStrategyFactory, MemoryAddress, WriteMissPolicy::*,
-    WritePolicy::*,
+    CacheBlock, MapStrategy, MapStrategyFactory, MemoryAddress,
 };
 use crate::WORD_SIZE;
 
@@ -13,7 +12,7 @@ impl MapStrategyFactory for SetAssociativeFactory {
     fn generate(&self, block_size: usize, cache_size: usize) -> Box<dyn MapStrategy> {
         let block_mask_size = (block_size.ilog2() + WORD_SIZE.ilog2()) as usize;
         let replacement_policy =
-            vec![LRU::new(cache_size / self.sets); self.sets].into_boxed_slice();
+            vec![Lru::new(cache_size / self.sets); self.sets].into_boxed_slice();
         let set_mask_size = self.sets.ilog2() as usize;
 
         let map_strategy = SetAssociative {
@@ -32,7 +31,7 @@ pub struct SetAssociative {
     cache_size: usize,
     block_mask_size: usize,
     set_mask_size: usize,
-    replacement_policy: Box<[LRU]>,
+    replacement_policy: Box<[Lru]>,
     sets: usize,
 }
 
@@ -41,7 +40,7 @@ impl SetAssociative {
         // First clear the block index
         address >>= self.block_mask_size;
         // Clear the tag
-        let delete_size = 8 * size_of::<MemoryAddress>() - self.set_mask_size;
+        let delete_size = MemoryAddress::BITS as usize - self.set_mask_size;
 
         address <<= delete_size;
         address >> delete_size

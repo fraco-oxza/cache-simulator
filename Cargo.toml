@@ -3,4 +3,9 @@ name = "cache-simulator"
 version = "0.1.0"
 edition = "2021"
 
+[profile.release]
+strip = true
+lto = true
+
+
 [dependencies]
