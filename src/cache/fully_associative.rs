@@ -1,7 +1,5 @@
 use crate::cache::lru::Lru;
-use crate::cache::{
-    CacheBlock, MapStrategy, MapStrategyFactory, MemoryAddress,
-};
+use crate::cache::{CacheBlock, MapStrategy, MapStrategyFactory, MemoryAddress};
 use crate::WORD_SIZE;
 
 pub struct FullyAssociativeFactory;
