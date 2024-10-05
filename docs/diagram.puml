@@ -1,0 +1,19 @@
+@startuml 
+
+abstract class Cache {
+    +write(address: unsigned)
+    +read(address: unsigned)
+    {abstract} #getShouldBeIndex()
+}
+
+class DirectMap extends Cache {}
+class FullyAssociative extends Cache {}
+class SetAssociative extends Cache {}
+
+
+
+class Cache {
+
+}
+
+@enduml
