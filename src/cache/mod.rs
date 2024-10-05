@@ -1,23 +1,62 @@
 mod direct_map;
+mod fully_associative;
+mod lru;
+mod set_associative;
 
+use crate::logger::Logger;
+pub use direct_map::*;
+pub use fully_associative::*;
+pub use set_associative::*;
 use AccessType::*;
-use ValueType::*;
 use WriteMissPolicy::*;
 use WritePolicy::*;
 
-type MemoryAddress = u32;
+pub type MemoryAddress = u32;
 
+pub trait MapStrategyFactory {
+    fn generate(&self, block_size: usize, cache_size: usize) -> Box<dyn MapStrategy>;
+}
 
-struct BaseCache {
+pub trait MapStrategy {
+    fn map(&mut self, address: MemoryAddress, blocks: &[CacheBlock]) -> MemoryAddress;
+    fn get_tag(&self, address: MemoryAddress) -> MemoryAddress;
+}
+
+pub struct Cache {
     block_size: usize,
     cache_size: usize,
-    cache_mask_size: usize,
+    map_strategy: Box<dyn MapStrategy>,
     blocks: Box<[CacheBlock]>,
     write_policy: WritePolicy,
     on_write_miss: WriteMissPolicy,
+    pub log: Logger,
 }
 
-#[derive(Clone)]
+impl Cache {
+    pub fn new(
+        block_size: usize,
+        cache_size: usize,
+        map_strategy_factory: Box<dyn MapStrategyFactory>,
+        write_policy: WritePolicy,
+        on_write_miss: WriteMissPolicy,
+    ) -> Self {
+        let map_strategy = map_strategy_factory.generate(block_size, cache_size);
+        let blocks = vec![CacheBlock::default(); cache_size].into_boxed_slice();
+        let log = Logger::default();
+
+        Cache {
+            block_size,
+            cache_size,
+            map_strategy,
+            blocks,
+            write_policy,
+            on_write_miss,
+            log,
+        }
+    }
+}
+
+#[derive(Clone, Default)]
 pub struct CacheBlock {
     pub valid: bool,
     pub dirty: bool,
@@ -25,28 +64,20 @@ pub struct CacheBlock {
 }
 
 impl CacheBlock {
-    fn new(block_size: usize) -> Self {
-        Self {
-            valid: false,
-            dirty: false,
-            tag: 0,
-        }
-    }
-
     fn is_match(&self, tag: MemoryAddress) -> bool {
         self.tag == tag
     }
 }
 
 #[derive(Default, Clone, Copy)]
-enum WriteMissPolicy {
+pub enum WriteMissPolicy {
     #[default]
     WriteAllocate,
     NoWriteAllocate,
 }
 
 #[derive(Default, Clone, Copy)]
-enum WritePolicy {
+pub enum WritePolicy {
     #[default]
     WriteThrough,
     WriteBack,
@@ -71,23 +102,36 @@ pub trait MemoryAccess {
     fn memory_write_block(&mut self);
 }
 
-pub trait Cache: MemoryAccess {
-    fn get_write_policy(&self) -> WritePolicy;
-    fn get_on_miss_write_policy(&self) -> WriteMissPolicy;
+impl MemoryAccess for Cache {
+    fn memory_write_word(&mut self) {
+        self.log.memory_write(1);
+    }
 
-    fn calculate_tag(&self, address: MemoryAddress) -> MemoryAddress;
+    fn memory_read_word(&mut self) {
+        self.log.memory_read(1);
+    }
 
-    fn get_block(&mut self, address: MemoryAddress) -> &mut CacheBlock;
+    fn memory_read_block(&mut self) {
+        self.log.memory_read(self.block_size as u128);
+    }
 
-    fn log_miss(&mut self, access_type: &AccessType);
-    fn log_reference(&mut self, access_type: &AccessType);
+    fn memory_write_block(&mut self) {
+        self.log.memory_write(self.block_size as u128);
+    }
+}
 
-    fn access(&mut self, access_type: AccessType, address: MemoryAddress) {
-        self.log_reference(&access_type);
+impl Cache {
+    fn get_block(&mut self, address: MemoryAddress) -> &mut CacheBlock {
+        let block_index = self.map_strategy.map(address, &self.blocks);
+        &mut self.blocks[block_index as usize]
+    }
 
-        let write_policy = self.get_write_policy();
-        let on_write_miss = self.get_on_miss_write_policy();
-        let tag = self.calculate_tag(address);
+    pub fn access(&mut self, access_type: AccessType, address: MemoryAddress) {
+        self.log.reference(&access_type);
+
+        let write_policy = self.write_policy;
+        let on_write_miss = self.on_write_miss;
+        let tag = self.map_strategy.get_tag(address);
         let block = self.get_block(address);
 
         if block.valid && block.is_match(tag) {
@@ -101,18 +145,18 @@ pub trait Cache: MemoryAccess {
         }
 
         // MISS
-        self.log_miss(&access_type);
-        let block = self.get_block(address);
-
         match (access_type, write_policy, on_write_miss) {
             (Read(_), WriteThrough, _) => {
                 block.tag = tag;
+                block.valid = true;
                 self.memory_read_block();
             }
             (Read(_), WriteBack, _) => {
                 block.tag = tag; // FIXME: This line should be down, but I had problems with lifetimes
+                let was_valid = block.valid;
+                block.valid = true;
 
-                if block.dirty {
+                if was_valid && block.dirty {
                     self.memory_write_block();
                 }
 
@@ -123,17 +167,20 @@ pub trait Cache: MemoryAccess {
             }
             (Write, WriteThrough, WriteAllocate) => {
                 block.tag = tag;
+                block.valid = true;
                 self.memory_read_block();
                 self.memory_write_word();
             }
             (Write, WriteBack, WriteAllocate) => {
                 block.tag = tag;
+                block.valid = true;
                 block.dirty = true;
 
                 self.memory_read_block();
                 self.memory_write_block();
             }
         }
+
+        self.log.miss(&access_type);
     }
 }
-
