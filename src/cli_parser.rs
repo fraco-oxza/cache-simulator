@@ -1,6 +1,5 @@
 use crate::common::{
-    DirectMapFactory, FullyAssociativeFactory, SetAssociativeFactory,
-    WriteMissPolicy, WritePolicy,
+    DirectMapFactory, FullyAssociativeFactory, SetAssociativeFactory, WriteMissPolicy, WritePolicy,
 };
 use crate::map_strategies::MapStrategyFactory;
 use crate::{DEFAULT_BLOCK_SIZE, DEFAULT_CACHE_SIZE};
