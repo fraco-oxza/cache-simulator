@@ -1,8 +1,8 @@
 use crate::cache::Cache;
 use crate::cli_parser::ParsedArgs;
 use crate::common::AccessType::{Read, Write};
-use crate::common::ValueType::{Data, Instruction};
 use crate::common::MemoryAddress;
+use crate::common::ValueType::{Data, Instruction};
 use crate::logger::Logger;
 use std::error::Error;
 use std::fs::File;

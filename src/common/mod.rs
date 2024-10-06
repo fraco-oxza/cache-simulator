@@ -14,7 +14,6 @@ use WritePolicy::*;
 /// Represents a memory address.
 pub type MemoryAddress = u32;
 
-
 /// Represents a single block within the common.
 #[derive(Clone, Default, PartialOrd, PartialEq, Debug)]
 pub struct CacheBlock {
@@ -69,4 +68,3 @@ pub enum AccessType {
     /// data.
     Write,
 }
-

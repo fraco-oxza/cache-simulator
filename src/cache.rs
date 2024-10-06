@@ -98,7 +98,6 @@ impl Cache {
             }
         }
 
-
         self.log.miss(&access_type);
     }
 

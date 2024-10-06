@@ -1,8 +1,8 @@
 use crate::common::{CacheBlock, MemoryAddress};
 
-pub mod set_associative;
 pub mod direct_map;
 pub mod fully_associative;
+pub mod set_associative;
 
 /// A factory trait for creating mapping strategies.
 pub trait MapStrategyFactory {
