@@ -1,7 +1,9 @@
-mod cache;
+mod common;
 mod cli_parser;
 mod logger;
 mod trace_simulator;
+mod cache;
+mod map_strategies;
 
 use crate::cli_parser::ParsedArgs;
 use crate::trace_simulator::TraceSimulator;

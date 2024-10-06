@@ -1,4 +1,5 @@
-use crate::cache::{CacheBlock, MapStrategy, MapStrategyFactory, MemoryAddress};
+use crate::common::{CacheBlock, MemoryAddress};
+use crate::map_strategies::{MapStrategy, MapStrategyFactory};
 use crate::WORD_SIZE;
 
 pub struct DirectMapFactory;

@@ -1,4 +1,4 @@
-use crate::cache::{
+use crate::common::{
     AccessType::{self, *},
     ValueType::*,
 };
