@@ -1,6 +1,7 @@
-use crate::common::lru::Lru;
-use crate::common::{CacheBlock, MemoryAddress};
+use crate::cache_block::CacheBlock;
+use crate::lru::Lru;
 use crate::map_strategies::{MapStrategy, MapStrategyFactory};
+use crate::MemoryAddress;
 use crate::WORD_SIZE;
 
 pub struct SetAssociativeFactory {
@@ -36,13 +37,9 @@ pub struct SetAssociative {
 
 impl SetAssociative {
     fn get_set(&self, mut address: MemoryAddress) -> MemoryAddress {
-        // First clear the block index
-        address >>= self.block_mask_size;
-        // Clear the tag
-        let delete_size = MemoryAddress::BITS as usize - self.set_mask_size;
-
-        address <<= delete_size;
-        address >> delete_size
+        let mask = (1 << (self.block_mask_size + self.set_mask_size)) - 1;
+        address &= mask;
+        address >> self.block_mask_size
     }
 }
 

@@ -1,9 +1,14 @@
+use crate::cache_block::CacheBlock;
 use crate::common::AccessType::{Read, Write};
 use crate::common::WriteMissPolicy::{NoWriteAllocate, WriteAllocate};
 use crate::common::WritePolicy::{WriteBack, WriteThrough};
-use crate::common::{AccessType, CacheBlock, MemoryAddress, WriteMissPolicy, WritePolicy};
+use crate::common::{AccessType, WriteMissPolicy, WritePolicy};
 use crate::logger::Logger;
 use crate::map_strategies::{MapStrategy, MapStrategyFactory};
+use crate::MemoryAddress;
+use std::cell::RefCell;
+use std::rc::Rc;
+
 
 /// Represents the main common structure.
 pub struct Cache {
@@ -12,20 +17,20 @@ pub struct Cache {
     blocks: Box<[CacheBlock]>,
     write_policy: WritePolicy,
     on_write_miss: WriteMissPolicy,
-    pub log: Logger,
+    log: Rc<RefCell<Logger>>,
 }
 
 impl Cache {
     pub fn new(
         block_size: usize,
         cache_size: usize,
-        map_strategy_factory: Box<dyn MapStrategyFactory>,
+        map_strategy_factory: &dyn MapStrategyFactory,
         write_policy: WritePolicy,
         on_write_miss: WriteMissPolicy,
+        log: Rc<RefCell<Logger>>,
     ) -> Self {
         let map_strategy = map_strategy_factory.generate(block_size, cache_size);
         let blocks = vec![CacheBlock::default(); cache_size].into_boxed_slice();
-        let log = Logger::default();
 
         Cache {
             block_size,
@@ -44,7 +49,7 @@ impl Cache {
     }
 
     pub fn access(&mut self, access_type: AccessType, address: MemoryAddress) {
-        self.log.reference(&access_type);
+        self.log.borrow_mut().reference(&access_type);
 
         let write_policy = self.write_policy;
         let on_write_miss = self.on_write_miss;
@@ -98,19 +103,18 @@ impl Cache {
             }
         }
 
-
-        self.log.miss(&access_type);
+        self.log.borrow_mut().miss(&access_type);
     }
 
     fn memory_write_word(&mut self) {
-        self.log.memory_write(1);
+        self.log.borrow_mut().memory_write(1);
     }
 
     fn memory_read_block(&mut self) {
-        self.log.memory_read(self.block_size as u128);
+        self.log.borrow_mut().memory_read(self.block_size as u128);
     }
 
     fn memory_write_block(&mut self) {
-        self.log.memory_write(self.block_size as u128);
+        self.log.borrow_mut().memory_write(self.block_size as u128);
     }
 }

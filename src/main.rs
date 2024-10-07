@@ -1,9 +1,11 @@
-mod common;
-mod cli_parser;
-mod logger;
-mod trace_simulator;
 mod cache;
+mod cli_parser;
+mod common;
+mod logger;
 mod map_strategies;
+mod trace_simulator;
+mod lru;
+mod cache_block;
 
 use crate::cli_parser::ParsedArgs;
 use crate::trace_simulator::TraceSimulator;
@@ -15,6 +17,7 @@ const MISS_DURATION: Duration = Duration::from_nanos(100);
 const WORD_SIZE: usize = 4;
 const DEFAULT_BLOCK_SIZE: usize = 64;
 const DEFAULT_CACHE_SIZE: usize = 256;
+pub type MemoryAddress = u32;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = std::env::args();

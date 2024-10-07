@@ -1,7 +1,8 @@
-use crate::common::{
-    DirectMapFactory, FullyAssociativeFactory, SetAssociativeFactory,
-    WriteMissPolicy, WritePolicy,
+use crate::common::{WriteMissPolicy, WritePolicy,
 };
+use crate::map_strategies::direct_map::DirectMapFactory;
+use crate::map_strategies::fully_associative::FullyAssociativeFactory;
+use crate::map_strategies::set_associative::SetAssociativeFactory;
 use crate::map_strategies::MapStrategyFactory;
 use crate::{DEFAULT_BLOCK_SIZE, DEFAULT_CACHE_SIZE};
 use std::env::Args;

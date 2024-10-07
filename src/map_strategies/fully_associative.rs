@@ -1,6 +1,7 @@
-use crate::common::lru::Lru;
-use crate::common::{CacheBlock, MemoryAddress};
+use crate::cache_block::CacheBlock;
+use crate::lru::Lru;
 use crate::map_strategies::{MapStrategy, MapStrategyFactory};
+use crate::MemoryAddress;
 
 use crate::WORD_SIZE;
 

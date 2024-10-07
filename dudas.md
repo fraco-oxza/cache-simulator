@@ -11,3 +11,5 @@
 ## Dudas 2
 
 - Al iterar por sobre el cache deberia añadir ese tiempo?
+- Solo hay tiempo de retraso al leer segun la instruccion
+- Al terminar el trace, en el caso de que sea WriteAllocate WriteBack, hay que descargar los bloques que esten sucios.

@@ -4,9 +4,10 @@ use crate::common::{
 };
 use crate::{HIT_DURATION, MISS_DURATION, WORD_SIZE};
 use std::fmt::{Display, Formatter};
+use std::ops::Add;
 use std::time::Duration;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Logger {
     instruction_references: u128,
     data_references: u128,
@@ -28,7 +29,7 @@ impl Logger {
 
                 self.running_time += HIT_DURATION;
             }
-            Write => self.instruction_references += 1,
+            Write => self.data_references += 1,
         }
     }
 
@@ -42,7 +43,7 @@ impl Logger {
 
                 self.running_time += MISS_DURATION * WORD_SIZE as u32;
             }
-            Write => self.instruction_misses += 1,
+            Write => self.data_misses += 1,
         }
     }
 
@@ -92,5 +93,20 @@ impl Display for Logger {
             self.running_time
         )?;
         writeln!(f, "└──────────────────────────┴────────────────┘")
+    }
+}
+
+impl Add for Logger {
+    type Output = Self;
+    fn add(self, other: Self) -> Self {
+        Self {
+            instruction_references: self.instruction_references + other.instruction_references,
+            data_references: self.data_references + other.data_references,
+            instruction_misses: self.instruction_misses + other.instruction_misses,
+            data_misses: self.data_misses + other.data_misses,
+            memory_reads: self.memory_reads + other.memory_reads,
+            memory_writes: self.memory_writes + other.memory_writes,
+            running_time: self.running_time + other.running_time,
+        }
     }
 }
