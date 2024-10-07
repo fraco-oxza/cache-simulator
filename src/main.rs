@@ -1,11 +1,11 @@
 mod cache;
+mod cache_block;
 mod cli_parser;
 mod common;
 mod logger;
+mod lru;
 mod map_strategies;
 mod trace_simulator;
-mod lru;
-mod cache_block;
 
 use crate::cli_parser::ParsedArgs;
 use crate::trace_simulator::TraceSimulator;

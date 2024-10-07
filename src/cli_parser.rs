@@ -1,5 +1,4 @@
-use crate::common::{WriteMissPolicy, WritePolicy,
-};
+use crate::cache::{WriteMissPolicy, WritePolicy};
 use crate::map_strategies::direct_map::DirectMapFactory;
 use crate::map_strategies::fully_associative::FullyAssociativeFactory;
 use crate::map_strategies::set_associative::SetAssociativeFactory;

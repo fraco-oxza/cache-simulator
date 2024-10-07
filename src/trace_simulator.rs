@@ -1,7 +1,7 @@
+use crate::cache::AccessType::{Read, Write};
 use crate::cache::Cache;
+use crate::cache::ValueType::{Data, Instruction};
 use crate::cli_parser::ParsedArgs;
-use crate::common::AccessType::{Read, Write};
-use crate::common::ValueType::{Data, Instruction};
 use crate::logger::Logger;
 use crate::MemoryAddress;
 use std::cell::RefCell;
@@ -44,10 +44,14 @@ impl TraceSimulator {
             None
         };
 
-
         let file = File::open(args.file_path)?;
         let file_reader = BufReader::new(file);
-        Ok(TraceSimulator { cache, file_reader, instructions_cache, logs })
+        Ok(TraceSimulator {
+            cache,
+            file_reader,
+            instructions_cache,
+            logs,
+        })
     }
 
     pub fn run(mut self) -> Result<Logger, Box<dyn Error>> {
