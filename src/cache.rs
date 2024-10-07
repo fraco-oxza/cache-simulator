@@ -9,7 +9,6 @@ use crate::MemoryAddress;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-
 /// Represents the main common structure.
 pub struct Cache {
     block_size: usize, // Bytes
