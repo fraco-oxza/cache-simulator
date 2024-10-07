@@ -44,10 +44,14 @@ impl TraceSimulator {
             None
         };
 
-
         let file = File::open(args.file_path)?;
         let file_reader = BufReader::new(file);
-        Ok(TraceSimulator { cache, file_reader, instructions_cache, logs })
+        Ok(TraceSimulator {
+            cache,
+            file_reader,
+            instructions_cache,
+            logs,
+        })
     }
 
     pub fn run(mut self) -> Result<Logger, Box<dyn Error>> {
