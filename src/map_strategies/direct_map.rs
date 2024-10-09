@@ -9,12 +9,10 @@ impl MapStrategyFactory for DirectMapFactory {
     fn generate(&self, block_size: usize, cache_size: usize) -> Box<dyn MapStrategy> {
         let block_mask_size = (block_size.ilog2() + WORD_SIZE.ilog2()) as usize;
         let cache_mask_size = cache_size.ilog2() as usize;
-        let tag_mask_size = MemoryAddress::BITS as usize - block_mask_size - cache_mask_size;
 
         let map_strategy = DirectMap {
             block_mask_size,
             cache_mask_size,
-            tag_mask_size,
         };
 
         Box::new(map_strategy)
@@ -22,20 +20,59 @@ impl MapStrategyFactory for DirectMapFactory {
 }
 
 pub struct DirectMap {
-    tag_mask_size: usize,
     block_mask_size: usize,
     cache_mask_size: usize,
 }
 
 impl MapStrategy for DirectMap {
-    fn map(&mut self, address: MemoryAddress, _blocks: &[CacheBlock]) -> MemoryAddress {
-        let ld = self.tag_mask_size;
-        let rs = self.block_mask_size;
-
-        address << ld >> (ld + rs)
+    fn map(&mut self, mut address: MemoryAddress, _blocks: &[CacheBlock]) -> MemoryAddress {
+        address %= 1 << (self.block_mask_size + self.cache_mask_size);
+        address >> self.block_mask_size
     }
 
     fn get_tag(&self, address: MemoryAddress) -> MemoryAddress {
         address >> (self.block_mask_size + self.cache_mask_size)
+    }
+}
+
+#[cfg(test)]
+mod unit_tests {
+    use crate::{map_strategies::MapStrategyFactory, MemoryAddress};
+    const FACTORY: super::DirectMapFactory = super::DirectMapFactory;
+
+    fn test_mapping(
+        block_size: usize,
+        cache_size: usize,
+        address: MemoryAddress,
+        correct_map: MemoryAddress,
+    ) {
+        let mut dm = FACTORY.generate(block_size, cache_size);
+        assert_eq!(dm.map(address, &[]), correct_map);
+    }
+
+    fn test_tag(
+        block_size: usize,
+        cache_size: usize,
+        address: MemoryAddress,
+        correct_tag: MemoryAddress,
+    ) {
+        let dm = FACTORY.generate(block_size, cache_size);
+        assert_eq!(dm.get_tag(address), correct_tag);
+    }
+
+    #[test]
+    fn mapping() {
+        test_mapping(4, 16, 0b1101_0010_1010, 0b10);
+        test_mapping(1, 16, 0b110100_1010_10, 0b1010);
+        test_mapping(1, 1, 0b101010101110__10, 0b0);
+        test_mapping(16, 1, 0b10101010__111010, 0b0);
+    }
+
+    #[test]
+    fn tags() {
+        test_tag(4, 16, 0b1101_0010_1010, 0b1101);
+        test_tag(1, 16, 0b110100_1010_10, 0b110100);
+        test_tag(1, 1, 0b101010101110__10, 0b101010101110);
+        test_tag(16, 1, 0b10101010__111010, 0b10101010);
     }
 }

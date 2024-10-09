@@ -2,7 +2,7 @@ use crate::cache::{
     AccessType::{self, *},
     ValueType::*,
 };
-use crate::{HIT_DURATION, MISS_DURATION, WORD_SIZE};
+use crate::{HIT_DURATION, MISS_DURATION};
 use std::fmt::{Display, Formatter};
 use std::ops::Add;
 use std::time::Duration;
@@ -21,38 +21,36 @@ pub struct Logger {
 impl Logger {
     pub fn reference(&mut self, access_type: &AccessType) {
         match access_type {
-            Read(value_type) => {
-                match value_type {
-                    Instruction => self.instruction_references += 1,
-                    Data => self.data_references += 1,
-                }
-
-                self.running_time += HIT_DURATION;
-            }
+            Read(value_type) => match value_type {
+                Instruction => self.instruction_references += 1,
+                Data => self.data_references += 1,
+            },
             Write => self.data_references += 1,
         }
     }
 
+    pub fn hit(&mut self) {
+        self.running_time += HIT_DURATION;
+    }
+
     pub fn miss(&mut self, access_type: &AccessType) {
         match access_type {
-            Read(value_type) => {
-                match value_type {
-                    Instruction => self.instruction_misses += 1,
-                    Data => self.data_misses += 1,
-                }
-
-                self.running_time += MISS_DURATION * WORD_SIZE as u32;
-            }
+            Read(value_type) => match value_type {
+                Instruction => self.instruction_misses += 1,
+                Data => self.data_misses += 1,
+            },
             Write => self.data_misses += 1,
         }
     }
 
     pub fn memory_write(&mut self, words: u128) {
         self.memory_writes += words;
+        self.running_time += MISS_DURATION * words as u32;
     }
 
     pub fn memory_read(&mut self, words: u128) {
         self.memory_reads += words;
+        self.running_time += MISS_DURATION * words as u32;
     }
 }
 

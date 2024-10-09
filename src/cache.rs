@@ -8,7 +8,7 @@ use AccessType::*;
 use WriteMissPolicy::*;
 use WritePolicy::*;
 
-/// Represents the main common structure.
+/// Represents the main cache structure.
 pub struct Cache {
     block_size: usize, // Bytes
     map_strategy: Box<dyn MapStrategy>,
@@ -40,7 +40,7 @@ impl Cache {
         }
     }
 
-    /// Retrieves a mutable reference to a common block based on the address.
+    /// Retrieves a mutable reference to a cache block based on the address.
     fn get_block(&mut self, address: MemoryAddress) -> &mut CacheBlock {
         let block_index = self.map_strategy.map(address, &self.blocks);
         &mut self.blocks[block_index as usize]
@@ -61,6 +61,7 @@ impl Cache {
                 WriteBack => block.dirty = true,
             }
 
+            self.log.borrow_mut().hit();
             return;
         }
 
@@ -75,6 +76,7 @@ impl Cache {
                 block.tag = tag;
                 let was_valid = block.valid;
                 block.valid = true;
+                block.dirty = false;
 
                 if was_valid && block.dirty {
                     self.memory_write_block();
@@ -102,6 +104,7 @@ impl Cache {
         }
 
         self.log.borrow_mut().miss(&access_type);
+        self.log.borrow_mut().hit();
     }
 
     fn memory_write_word(&mut self) {
@@ -120,23 +123,23 @@ impl Cache {
 /// Defines the policy to follow on a write miss.
 #[derive(Default, Clone, Copy, Debug)]
 pub enum WriteMissPolicy {
-    /// Allocate a block in the common for the write operation.
-    /// In this case, the block is loaded from the memory to the common and
+    /// Allocate a block in the cache for the write operation.
+    /// In this case, the block is loaded from the memory to the cache and
     /// then the write-hit operation is performed.
     #[default]
     WriteAllocate,
     /// Do not allocate a block, write directly to memory.
     /// In this case, the write-miss operation is performed directly on the memory.
-    /// The common is not modified.
+    /// The cache is not modified.
     NoWriteAllocate,
 }
 
 #[derive(Default, Clone, Copy, Debug)]
 pub enum WritePolicy {
-    /// Write data to both the common and main memory on every write.
+    /// Write data to both the cache and main memory on every write.
     #[default]
     WriteThrough,
-    /// Write data only to the common. Write to main memory only when a block
+    /// Write data only to the cache. Write to main memory only when a block
     /// is evicted.
     WriteBack,
 }
