@@ -1,7 +1,6 @@
 mod cache;
 mod cache_block;
 mod cli_parser;
-mod common;
 mod logger;
 mod lru;
 mod map_strategies;
