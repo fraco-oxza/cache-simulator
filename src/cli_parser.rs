@@ -6,6 +6,7 @@ use crate::map_strategies::MapStrategyFactory;
 use crate::{DEFAULT_BLOCK_SIZE, DEFAULT_CACHE_SIZE};
 use std::env::Args;
 use std::error::Error;
+use std::fmt::Display;
 use std::path::PathBuf;
 
 #[derive(Debug)]
@@ -75,5 +76,17 @@ impl ParsedArgs {
             map_strategy_factory,
             file_path,
         })
+    }
+}
+
+impl Display for ParsedArgs {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Block Size: {}", self.block_size)?;
+        writeln!(f, "Cache Size: {}", self.cache_size)?;
+        writeln!(f, "Write Policy: {:?}", self.write_policy)?;
+        writeln!(f, "Write Miss Policy: {:?}", self.write_miss_policy)?;
+        writeln!(f, "Map Strategy: {:?}", self.map_strategy_factory)?;
+        writeln!(f, "Split I/D: {}", self.split_i_d)?;
+        writeln!(f, "File Path: {:?}", self.file_path)
     }
 }

@@ -66,7 +66,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         println!("Cache Total size of {}", size);
-        println!("{:?}", best_args.unwrap());
+        println!("{}", best_args.unwrap());
         println!("{:?}", best_time.unwrap())
     }
 
