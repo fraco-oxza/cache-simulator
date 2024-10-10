@@ -23,8 +23,8 @@ impl TraceSimulator {
         let logs = Rc::new(RefCell::new(Logger::default()));
 
         let cache = Cache::new(
-            args.block_size / (1 + args.split_i_d as usize),
-            args.cache_size,
+            args.block_size,
+            args.cache_size / (1 + args.split_i_d as usize),
             &*args.map_strategy_factory,
             args.write_policy,
             args.write_miss_policy,
@@ -33,8 +33,8 @@ impl TraceSimulator {
 
         let instructions_cache = if args.split_i_d {
             Some(Cache::new(
-                args.block_size / 2,
-                args.cache_size,
+                args.block_size,
+                args.cache_size / 2,
                 &*args.map_strategy_factory,
                 args.write_policy,
                 args.write_miss_policy,

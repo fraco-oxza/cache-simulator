@@ -5,6 +5,7 @@ use crate::MemoryAddress;
 
 use crate::WORD_SIZE;
 
+#[derive(Debug)]
 pub struct FullyAssociativeFactory;
 
 impl MapStrategyFactory for FullyAssociativeFactory {

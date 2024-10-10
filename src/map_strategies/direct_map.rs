@@ -3,6 +3,7 @@ use crate::map_strategies::{MapStrategy, MapStrategyFactory};
 use crate::MemoryAddress;
 use crate::WORD_SIZE;
 
+#[derive(Debug)]
 pub struct DirectMapFactory;
 
 impl MapStrategyFactory for DirectMapFactory {
@@ -63,16 +64,16 @@ mod unit_tests {
     #[test]
     fn mapping() {
         test_mapping(4, 16, 0b1101_0010_1010, 0b10);
-        test_mapping(1, 16, 0b110100_1010_10, 0b1010);
-        test_mapping(1, 1, 0b101010101110__10, 0b0);
-        test_mapping(16, 1, 0b10101010__111010, 0b0);
+        test_mapping(1, 16, 0b1101_0010_1010, 0b1010);
+        test_mapping(1, 1, 0b10_1010_1011_1010, 0b0);
+        test_mapping(16, 1, 0b10_1010_1011_1010, 0b0);
     }
 
     #[test]
     fn tags() {
         test_tag(4, 16, 0b1101_0010_1010, 0b1101);
-        test_tag(1, 16, 0b110100_1010_10, 0b110100);
-        test_tag(1, 1, 0b101010101110__10, 0b101010101110);
-        test_tag(16, 1, 0b10101010__111010, 0b10101010);
+        test_tag(1, 16, 0b1101_0010_1010, 0b110100);
+        test_tag(1, 1, 0b10_1010_1011_1010, 0b101010101110);
+        test_tag(16, 1, 0b10_1010_1011_1010, 0b10101010);
     }
 }

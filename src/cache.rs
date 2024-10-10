@@ -137,10 +137,10 @@ pub enum WriteMissPolicy {
 #[derive(Default, Clone, Copy, Debug)]
 pub enum WritePolicy {
     /// Write data to both the cache and main memory on every write.
-    #[default]
     WriteThrough,
     /// Write data only to the cache. Write to main memory only when a block
     /// is evicted.
+    #[default]
     WriteBack,
 }
 

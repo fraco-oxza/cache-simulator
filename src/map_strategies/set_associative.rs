@@ -4,6 +4,7 @@ use crate::map_strategies::{MapStrategy, MapStrategyFactory};
 use crate::MemoryAddress;
 use crate::WORD_SIZE;
 
+#[derive(Debug)]
 pub struct SetAssociativeFactory {
     pub sets: usize,
 }

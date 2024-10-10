@@ -1,22 +1,6 @@
-use crate::cli_parser::ParsedArgs;
-use crate::trace_simulator::TraceSimulator;
+use cache_simulator::cli_parser::ParsedArgs;
+use cache_simulator::trace_simulator::TraceSimulator;
 use std::error::Error;
-use std::time::Duration;
-
-mod cache;
-mod cache_block;
-mod cli_parser;
-mod logger;
-mod lru;
-mod map_strategies;
-mod trace_simulator;
-
-const HIT_DURATION: Duration = Duration::from_nanos(5);
-const MISS_DURATION: Duration = Duration::from_nanos(100);
-const WORD_SIZE: usize = 4;
-const DEFAULT_BLOCK_SIZE: usize = 64;
-const DEFAULT_CACHE_SIZE: usize = 256;
-pub type MemoryAddress = u32;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = std::env::args();

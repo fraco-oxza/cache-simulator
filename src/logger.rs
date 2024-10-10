@@ -9,13 +9,13 @@ use std::time::Duration;
 
 #[derive(Default, Clone)]
 pub struct Logger {
-    instruction_references: u128,
-    data_references: u128,
-    instruction_misses: u128,
-    data_misses: u128,
-    memory_reads: u128,
-    memory_writes: u128,
-    running_time: Duration,
+    pub instruction_references: u128,
+    pub data_references: u128,
+    pub instruction_misses: u128,
+    pub data_misses: u128,
+    pub memory_reads: u128,
+    pub memory_writes: u128,
+    pub running_time: Duration,
 }
 
 impl Logger {
@@ -41,6 +41,10 @@ impl Logger {
             },
             Write => self.data_misses += 1,
         }
+    }
+
+    pub fn get_miss(&self) -> u128 {
+        self.instruction_misses + self.data_misses
     }
 
     pub fn memory_write(&mut self, words: u128) {

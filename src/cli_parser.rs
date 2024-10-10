@@ -8,13 +8,13 @@ use std::env::Args;
 use std::error::Error;
 use std::path::PathBuf;
 
+#[derive(Debug)]
 pub struct ParsedArgs {
     pub block_size: usize,
     pub cache_size: usize,
     pub write_policy: WritePolicy,
     pub write_miss_policy: WriteMissPolicy,
     pub map_strategy_factory: Box<dyn MapStrategyFactory>,
-    #[allow(dead_code)] // TODO: Implement this
     pub split_i_d: bool,
     pub file_path: PathBuf,
 }

@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::cache_block::CacheBlock;
 use crate::MemoryAddress;
 
@@ -6,7 +8,7 @@ pub mod fully_associative;
 pub mod set_associative;
 
 /// A factory trait for creating mapping strategies.
-pub trait MapStrategyFactory {
+pub trait MapStrategyFactory: fmt::Debug {
     /// Generates a new mapping strategy instance.
     fn generate(&self, block_size: usize, cache_size: usize) -> Box<dyn MapStrategy>;
 }
