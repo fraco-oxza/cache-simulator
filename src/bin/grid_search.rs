@@ -1,9 +1,9 @@
-use cache_simulator::{cli_parser::ParsedArgs, trace_simulator::TraceSimulator, WORD_SIZE};
-use cache_simulator::map_strategies::fully_associative::FullyAssociativeFactory;
-use std::error::Error;
-use std::path::PathBuf;
 use cache_simulator::cache::{WriteMissPolicy, WritePolicy};
 use cache_simulator::logger::Logger;
+use cache_simulator::map_strategies::fully_associative::FullyAssociativeFactory;
+use cache_simulator::{cli_parser::ParsedArgs, trace_simulator::TraceSimulator, WORD_SIZE};
+use std::error::Error;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Copy)]
 enum Metric {
@@ -32,8 +32,8 @@ impl Metric {
                 } else {
                     0.0
                 }
-            },
-            Metric::ExecutionTime => log.running_time.as_secs_f64(),  // Nueva métrica implementada
+            }
+            Metric::ExecutionTime => log.running_time.as_secs_f64(), // Nueva métrica implementada
         }
     }
 
@@ -45,7 +45,7 @@ impl Metric {
             "memory_reads" => Some(Self::MemoryReads),
             "memory_writes" => Some(Self::MemoryWrites),
             "miss_ratio" => Some(Self::MissRatio),
-            "execution_time" => Some(Self::ExecutionTime),  // Nueva opción añadida
+            "execution_time" => Some(Self::ExecutionTime), // Nueva opción añadida
             _ => None,
         }
     }
@@ -54,7 +54,7 @@ impl Metric {
 fn main() -> Result<(), Box<dyn Error>> {
     let mut args = std::env::args();
     let program = args.next().unwrap();
-    
+
     if args.len() < 2 {
         eprintln!("Usage: {} <metric> <trace_file>", program);
         eprintln!("Available metrics: instruction_misses, data_misses, total_misses, memory_reads, memory_writes, miss_ratio, execution_time");
@@ -63,7 +63,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let metric_str = args.next().unwrap();
     let metric = Metric::from_str(&metric_str).ok_or("Invalid metric specified")?;
-    
+
     let raw_file_path = args.next().unwrap();
     let file_path = PathBuf::from(raw_file_path);
     let byte_sizes: Vec<usize> = vec![512, 1024, 2048, 4096, 8192, 16384, 32768, 65536];
