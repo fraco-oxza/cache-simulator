@@ -1,6 +1,6 @@
 use crate::MemoryAddress;
 
-/// Represents a single block within the common.
+/// Represents a single block within the cache.
 #[derive(Clone, Default, PartialOrd, PartialEq, Debug)]
 pub struct CacheBlock {
     pub valid: bool,
@@ -9,7 +9,7 @@ pub struct CacheBlock {
 }
 
 impl CacheBlock {
-    pub(crate) fn is_match(&self, tag: MemoryAddress) -> bool {
+    pub fn is_match(&self, tag: MemoryAddress) -> bool {
         self.tag == tag
     }
 }

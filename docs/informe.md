@@ -136,22 +136,54 @@ verificarlo ejecutando:
 grid_search execution_time traces/cc.trace
 ```
 
-## Enfoque Mixto para la Selección de Arquitectura
+## Enfoque Integrado para la Selección de Arquitectura de Caché
 
-Dado que la métrica de tiempo no es la mejor para comparar arquitecturas, se
-utilizará principalmente la métrica de "miss rate" (tasa de fallos), que es la
-proporción de fallos que tiene la caché en relación con la cantidad total de
-accesos. Esta métrica demostró ser más adecuada para comparar arquitecturas,
-aunque también tiene limitaciones.
+Reconociendo las limitaciones de utilizar métricas individuales como el "miss
+rate" o el tiempo de ejecución para comparar arquitecturas de caché, hemos
+desarrollado una métrica combinada que ofrece una visión más completa del
+rendimiento.
 
-La principal limitación es que no toma en cuenta las penalizaciones de tiempo,
-por lo tanto, es incapaz de determinar los parámetros óptimos para la "Write
-Policy" y "Write Allocate Policy". Por esto, se utilizará un enfoque mixto:
+### La Métrica Combinada
 
-1. Se usará la métrica de "miss rate" para encontrar la mejor combinación de
-   tamaño de caché, tamaño de bloque y división (split).
-2. Luego se utilizará la métrica de "tiempo de ejecución" para determinar la
-   mejor combinación de "Write Policy" y "Write Allocate Policy".
+Nuestra nueva métrica integra tres aspectos clave del rendimiento de la caché:
+
+1. **Miss Ratio**: Representa la proporción de fallos de caché en relación con
+   el total de accesos.
+2. **Operaciones de Memoria**: Combina la cantidad de lecturas y escrituras en
+   memoria.
+3. **Tiempo de Ejecución**: Captura el tiempo total de ejecución de la
+   simulación.
+
+### Ventajas del Enfoque Integrado
+
+1. **Equilibrio entre Precisión y Velocidad**: Al considerar tanto el miss
+   ratio como el tiempo de ejecución, la métrica captura tanto la eficiencia de
+   la caché como las penalizaciones temporales.
+
+2. **Consideración de Patrones de Acceso**: Al incluir las operaciones de
+   memoria, la métrica tiene en cuenta los patrones de lectura y escritura, que
+   son cruciales para evaluar políticas como "Write Policy" y "Write Allocate
+   Policy".
+
+3. **Normalización Automática**: Los componentes de la métrica se normalizan
+   automáticamente basándose en los valores máximos observados en todas las
+   simulaciones, lo que permite una comparación justa entre diferentes
+   configuraciones.
+
+4. **Flexibilidad**: Esta métrica única puede utilizarse para optimizar todos
+   los parámetros de la caché simultáneamente, incluyendo tamaño de caché,
+   tamaño de bloque, división (split), Write Policy y Write Allocate Policy.
+
+### Interpretación
+
+Un valor más bajo de la métrica combinada indica un mejor rendimiento general.
+La métrica busca minimizar simultáneamente el miss ratio, las operaciones de
+memoria y el tiempo de ejecución, proporcionando una evaluación integral de la
+eficiencia de la caché.
+
+Esta aproximación integrada supera las limitaciones de usar métricas
+individuales, ofreciendo una herramienta más robusta y versátil para la
+selección y optimización de arquitecturas de caché.
 
 ## Consideraciones Adicionales
 
@@ -166,70 +198,141 @@ tomar decisiones de implementación real, se deberían tener en cuenta los costo
 efectivos de estas operaciones, tanto en términos de implementación como de
 ejecución.
 
-## CC
+Para todas las respuestas se asume que se utiliza una caché **fully
+associative**, ya que, según las consideraciones, el costo de buscar un bloque
+en este tipo de caché es despreciable y el algoritmo LRU maximiza el uso de la
+caché.
 
-| Cache Total Size | Cache Size | Block Size | Split | Tiempo (ms) | Miss Ratio |
-| ---------------- | ---------- | ---------- | ----- | ----------- | ---------- |
-| 4                | 1          | 1          | false | 113.30      | 1.0        |
-| 8                | 1          | 2          | false | 170.77      | 0.741      |
-| 16               | 1          | 4          | false | 263.40      | 0.611      |
-| 32               | 2          | 4          | true  | 243.15      | 0.441      |
-| 64               | 2          | 8          | true  | 343.01      | 0.333      |
-| 128              | 2          | 16         | true  | 514.51      | 0.270      |
-| 256              | 4          | 16         | false | 430.97      | 0.215      |
-| 512              | 8          | 16         | false | 350.63      | 0.162      |
-| 1024             | 8          | 32         | false | 448.95      | 0.110      |
-| 2048             | 16         | 32         | false | 340.07      | 0.0756     |
-| 4096             | 16         | 64         | false | 425.40      | 0.0508     |
-| 8192             | 32         | 64         | false | 320.87      | 0.0342     |
-| 16384            | 64         | 64         | false | 225.23      | 0.0191     |
-| 32768            | 128        | 64         | false | 154.60      | 0.0079     |
-| 65536            | 128        | 128        | false | 149.08      | 0.0035     |
+## ¿Cuál es la mejor arquitectura de cache para spice.trace?
 
-## Spice
+```bash
+grid_search combined_performance traces/spice.trace
+```
 
-| Cache Total Size | Cache Size | Block Size | Split | Tiempo (ms) | Miss Ratio |
-| ---------------- | ---------- | ---------- | ----- | ----------- | ---------- |
-| 4                | 1          | 1          | false | 111.65      | 1.0        |
-| 8                | 1          | 2          | false | 171.27      | 0.729      |
-| 16               | 1          | 4          | false | 270.28      | 0.617      |
-| 32               | 2          | 4          | true  | 245.39      | 0.453      |
-| 64               | 2          | 8          | true  | 357.39      | 0.355      |
-| 128              | 2          | 16         | true  | 532.86      | 0.283      |
-| 256              | 4          | 16         | false | 389.34      | 0.188      |
-| 512              | 8          | 16         | true  | 298.91      | 0.128      |
-| 1024             | 8          | 32         | true  | 378.34      | 0.0879     |
-| 2048             | 8          | 64         | false | 470.56      | 0.0580     |
-| 4096             | 128        | 8          | false | 122.23      | 0.0244     |
-| 8192             | 64         | 32         | false | 132.16      | 0.0087     |
-| 16384            | 512        | 8          | false | 107.42      | 0.0034     |
-| 32768            | 128        | 64         | false | 109.79      | 0.0008     |
-| 65536            | 64         | 256        | true  | 111.66      | 0.0003     |
+| Cache Total Size | Cache Size | Block Size | Split | On Write Miss   | Write Policy | Combined Metric |
+| ---------------- | ---------- | ---------- | ----- | --------------- | ------------ | --------------- |
+| 4                | 1          | 1          | false | NoWriteAllocate | WriteThrough | 2.878020        |
+| 16               | 2          | 2          | true  | NoWriteAllocate | WriteBack    | 1.423894        |
+| 64               | 8          | 2          | false | NoWriteAllocate | WriteBack    | 0.711658        |
+| 256              | 16         | 4          | true  | WriteAllocate   | WriteBack    | 0.297932        |
+| 1024             | 16         | 16         | false | WriteAllocate   | WriteBack    | 0.119842        |
+| 4096             | 128        | 8          | false | WriteAllocate   | WriteBack    | 0.025246        |
+| 16384            | 512        | 8          | false | WriteAllocate   | WriteBack    | 0.003433        |
+| 65536            | 64         | 256        | true  | WriteAllocate   | WriteBack    | 0.000285        |
 
-## Tex
+Para el archivo de traza `spice.trace`, la mejor arquitectura de caché varía
+según el tamaño total de la caché disponible:
 
-| Cache Total Size | Cache Size | Block Size | Split | Tiempo (ms) | Miss Ratio |
-| ---------------- | ---------- | ---------- | ----- | ----------- | ---------- |
-| 4                | 1          | 1          | false | 97.86       | 1.0        |
-| 8                | 1          | 2          | false | 141.91      | 0.780      |
-| 16               | 2          | 2          | true  | 126.98      | 0.583      |
-| 32               | 2          | 4          | true  | 198.28      | 0.417      |
-| 64               | 4          | 4          | true  | 162.27      | 0.289      |
-| 128              | 4          | 8          | true  | 212.76      | 0.212      |
-| 256              | 4          | 16         | true  | 290.83      | 0.162      |
-| 512              | 32         | 4          | false | 88.78       | 0.0047     |
-| 1024             | 32         | 8          | true  | 88.89       | 0.0024     |
-| 2048             | 16         | 32         | false | 89.04       | 0.0006     |
-| 4096             | 16         | 64         | true  | 89.08       | 0.0003     |
-| 8192             | 16         | 128        | true  | 89.11       | 0.0002     |
-| 16384            | 16         | 256        | true  | 89.25       | 0.0001     |
-| 32768            | 16         | 512        | true  | 89.56       | 0.00005    |
-| 65536            | 16         | 1024       | false | 89.35       | 0.00002    |
+- Para tamaños de caché pequeños (4, 16 y 64 bytes): Se observa un mejor
+  rendimiento con la política "No Write Allocate" y "Write Through". Esto
+  indica que, en estas configuraciones, la escritura directa en memoria
+  principal (sin actualizar la caché) es más eficiente que la escritura en
+  caché, especialmente cuando los datos escritos no se vuelven a leer pronto.
+- Para tamaños de caché medianos y grandes (256, 1024, 4096, 16384 y 65536
+  bytes): La mejor arquitectura utiliza la política "Write Allocate" y "Write
+  Back". En este caso, al escribir en la caché y actualizar la memoria
+  principal solo cuando se reemplaza un bloque, se reduce el número de accesos
+  a memoria principal y se mejora el rendimiento.
 
-**Observation:**
+En general, para `spice.trace` se observa una tendencia hacia arquitecturas
+con "Write Allocate" y "Write Back" a medida que aumenta el tamaño de la
+caché.
 
-Similar to the spice.trace, the cc.trace also shows a trend where larger cache sizes with smaller block sizes perform better for larger total cache sizes. However, the difference is not as pronounced as in the spice.trace. This suggests that the cc.trace might have a balance of spatial and temporal locality.
+## ¿Cuál es la mejor arquitectura de cache para cc.trace?
 
-**General Conclusion:**
+```bash
+grid_search combined_performance traces/cc.trace
+```
 
-Across all three traces (tex, spice, and cc), increasing the total cache size generally leads to a decrease in the miss ratio and, consequently, better performance. However, the optimal block size depends on the specific access patterns of the trace. Traces with more spatial locality (like spice) benefit from smaller block sizes with larger caches, while traces with a balance of spatial and temporal locality (like cc) might show a less pronounced preference for smaller block sizes.
+| Cache Total Size | Cache Size | Block Size | Split | On Write Miss   | Write Policy | Combined Metric |
+| ---------------- | ---------- | ---------- | ----- | --------------- | ------------ | --------------- |
+| 4                | 1          | 1          | false | NoWriteAllocate | WriteThrough | 2.850054        |
+| 16               | 2          | 2          | true  | NoWriteAllocate | WriteBack    | 1.428128        |
+| 64               | 4          | 4          | true  | NoWriteAllocate | WriteBack    | 0.718400        |
+| 256              | 8          | 8          | true  | WriteAllocate   | WriteBack    | 0.334571        |
+| 1024             | 16         | 16         | false | WriteAllocate   | WriteBack    | 0.142906        |
+| 4096             | 32         | 32         | false | WriteAllocate   | WriteBack    | 0.060836        |
+| 16384            | 64         | 64         | false | WriteAllocate   | WriteBack    | 0.020179        |
+| 65536            | 128        | 128        | false | WriteAllocate   | WriteBack    | 0.003575        |
+
+Para el archivo de traza `cc.trace`, se observa un patrón similar al de
+`spice.trace`:
+
+- Tamaños de caché pequeños (4, 16 y 64 bytes): "No Write Allocate" y
+  "Write Through" ofrecen el mejor rendimiento.
+- Tamaños de caché medianos y grandes (256, 1024, 4096, 16384 y 65536
+  bytes): "Write Allocate" y "Write Back" se convierten en la mejor opción.
+
+Al igual que con `spice.trace`, `cc.trace` se beneficia de "Write Allocate" y
+"Write Back" con caches más grandes.
+
+## ¿Cuál es la mejor arquitectura de cache para tex.trace?
+
+```bash
+grid_search combined_performance traces/tex.trace
+```
+
+| Cache Total Size | Cache Size | Block Size | Split | On Write Miss   | Write Policy | Combined Metric |
+| ---------------- | ---------- | ---------- | ----- | --------------- | ------------ | --------------- |
+| 4                | 1          | 1          | false | NoWriteAllocate | WriteThrough | 2.781662        |
+| 16               | 2          | 2          | true  | NoWriteAllocate | WriteBack    | 1.197989        |
+| 64               | 4          | 4          | true  | WriteAllocate   | WriteBack    | 0.484909        |
+| 256              | 8          | 8          | true  | WriteAllocate   | WriteBack    | 0.229445        |
+| 1024             | 32         | 8          | true  | WriteAllocate   | WriteBack    | 0.002941        |
+| 4096             | 16         | 64         | true  | WriteAllocate   | WriteBack    | 0.000462        |
+| 16384            | 16         | 256        | true  | WriteAllocate   | WriteBack    | 0.000126        |
+| 65536            | 16         | 1024       | false | WriteAllocate   | WriteBack    | 0.000033        |
+
+El archivo de traza `tex.trace` muestra una preferencia aún más marcada por
+"Write Allocate" y "Write Back":
+
+- Incluso para el tamaño de caché más pequeño (4 bytes): "No Write
+  Allocate" y "Write Through" son la mejor opción.
+- Para todos los demás tamaños de caché (16, 64, 256, 1024, 4096, 16384 y
+  65536 bytes): "Write Allocate" y "Write Back" ofrecen el mejor rendimiento,
+  con una mejora significativa en la métrica combinada a medida que aumenta el
+  tamaño de la caché.
+
+`tex.trace` se beneficia especialmente de "Write Allocate" y "Write Back", lo
+que sugiere un patrón de acceso a datos con mayor reutilización de
+escrituras.
+
+## ¿Por qué hay diferencias entre los programas? Si tuviera que diseñar un cache para un computador que ejecutará solo estos programas, que arquitectura usaría?
+
+Las diferencias en las arquitecturas de caché óptimas para `spice.trace`,
+`cc.trace` y `tex.trace` se deben a las variaciones en sus patrones de acceso
+a memoria. Cada programa tiene una forma particular de acceder a los datos,
+lo que influye en la eficiencia de diferentes estrategias de caché.
+
+Algunos factores que pueden causar estas diferencias son:
+
+- Localidad espacial: Programas con alta localidad espacial acceden a
+  direcciones de memoria cercanas entre sí. Esto favorece a cachés con bloques
+  más grandes, ya que se carga un conjunto de datos contiguos en cada acceso.
+- Localidad temporal: Programas con alta localidad temporal acceden
+  repetidamente a las mismas direcciones de memoria en un corto período de
+  tiempo. Esto beneficia a cachés con políticas de reemplazo que priorizan los
+  datos accedidos recientemente (como LRU).
+- Frecuencia de lectura/escritura: La proporción de lecturas y escrituras
+  influye en la eficiencia de las políticas "Write Allocate" y "Write
+  Through/Write Back". Programas con muchas escrituras pueden beneficiarse de
+  "Write Allocate", mientras que aquellos con predominio de lecturas pueden
+  funcionar mejor con "Write Through".
+
+Si tuviéramos que diseñar una caché para un computador que ejecutará solo
+`spice.trace`, `cc.trace` y `tex.trace`, se podría optar por una arquitectura
+que ofrezca un buen rendimiento en los tres casos.
+
+Considerando las tendencias observadas en los experimentos, una buena opción sería:
+
+- Caché fully associative: Maximiza la flexibilidad en la ubicación de los
+  bloques y, según las consideraciones, el costo de búsqueda es despreciable.
+- Tamaño de caché relativamente grande: A partir de 256 bytes, "Write
+  Allocate" y "Write Back" se convierten en la mejor opción para los tres
+  programas. Un tamaño mayor (por ejemplo, 4096 bytes o más) podría ofrecer un
+  mejor rendimiento general.
+- Política "Write Allocate" y "Write Back": Esta combinación es la más
+  eficiente para los tres programas en cachés de tamaño mediano y grande.
+- Tamaño de bloque adaptable: Si bien no se puede determinar un tamaño de
+  bloque óptimo universal, un tamaño moderado (entre 8 y 64 palabras) podría
+  ser un buen punto de partida.
