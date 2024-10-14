@@ -46,7 +46,7 @@ impl LockedParams {
                         _ => return Err("Invalid write policy".into()),
                     });
                 }
-                "--wmp" => {
+                "-wmp" => {
                     i += 1;
                     locked.write_miss_policy = Some(match args[i].to_lowercase().as_str() {
                         "writeallocate" => WriteMissPolicy::WriteAllocate,
@@ -371,11 +371,11 @@ fn print_usage(program_name: &str) {
     eprintln!("  execution_time");
     eprintln!("  combined_performance");
     eprintln!("Options:");
-    eprintln!("  --block-size <size>          Lock block size");
-    eprintln!("  --cache-size <size>          Lock cache size");
-    eprintln!("  --write-policy <policy>      Lock write policy (writethrough/writeback)");
+    eprintln!("  -bs <size>          Lock block size");
+    eprintln!("  -cs <size>          Lock cache size");
+    eprintln!("  -wp <policy>      Lock write policy (writethrough/writeback)");
     eprintln!(
-        "  --write-miss-policy <policy> Lock write miss policy (writeallocate/nowriteallocate)"
+        "  -wmp <policy> Lock write miss policy (writeallocate/nowriteallocate)"
     );
-    eprintln!("  --split-i-d <bool>           Lock split I/D (true/false)");
+    eprintln!("  -split <bool>           Lock split I/D (true/false)");
 }
