@@ -76,8 +76,8 @@ struct MetricStats {
 impl MetricStats {
     fn update(&mut self, log: &Logger) {
         let miss_ratio = if log.instruction_references + log.data_references > 0 {
-            (log.instruction_misses + log.data_misses) as f64 
-            / (log.instruction_references + log.data_references) as f64
+            (log.instruction_misses + log.data_misses) as f64
+                / (log.instruction_references + log.data_references) as f64
         } else {
             0.0
         };
@@ -141,8 +141,8 @@ impl Metric {
 
     fn calculate_combined_performance(log: &Logger, stats: &MetricStats) -> f64 {
         let miss_ratio = if log.instruction_references + log.data_references > 0 {
-            (log.instruction_misses + log.data_misses) as f64 
-            / (log.instruction_references + log.data_references) as f64
+            (log.instruction_misses + log.data_misses) as f64
+                / (log.instruction_references + log.data_references) as f64
         } else {
             0.0
         };
@@ -150,9 +150,21 @@ impl Metric {
         let words = (log.memory_reads + log.memory_writes) as f64;
         let time = log.running_time.as_secs_f64();
 
-        let normalized_miss_ratio = if stats.max_miss_ratio > 0.0 { miss_ratio / stats.max_miss_ratio } else { 0.0 };
-        let normalized_words = if stats.max_words > 0.0 { words / stats.max_words } else { 0.0 };
-        let normalized_time = if stats.max_time > 0.0 { time / stats.max_time } else { 0.0 };
+        let normalized_miss_ratio = if stats.max_miss_ratio > 0.0 {
+            miss_ratio / stats.max_miss_ratio
+        } else {
+            0.0
+        };
+        let normalized_words = if stats.max_words > 0.0 {
+            words / stats.max_words
+        } else {
+            0.0
+        };
+        let normalized_time = if stats.max_time > 0.0 {
+            time / stats.max_time
+        } else {
+            0.0
+        };
 
         normalized_miss_ratio + normalized_words + normalized_time
     }
@@ -181,9 +193,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut metric_stats = MetricStats::default();
 
     for size in byte_sizes {
-        let (best_args, best_metric_value, best_logs) = find_best_configuration(
-            size, &locked_params, &file_path, &metric, &mut metric_stats
-        )?;
+        let (best_args, best_metric_value, best_logs) =
+            find_best_configuration(size, &locked_params, &file_path, &metric, &mut metric_stats)?;
 
         if let (Some(args), Some(logs)) = (best_args, best_logs) {
             println!("Cache Total size of {}", size);
@@ -230,7 +241,10 @@ fn find_best_configuration(
             let write_miss_policies = if let Some(wmp) = locked_params.write_miss_policy {
                 vec![wmp]
             } else {
-                vec![WriteMissPolicy::WriteAllocate, WriteMissPolicy::NoWriteAllocate]
+                vec![
+                    WriteMissPolicy::WriteAllocate,
+                    WriteMissPolicy::NoWriteAllocate,
+                ]
             };
 
             let write_policies = if let Some(wp) = locked_params.write_policy {
@@ -289,24 +303,46 @@ fn find_best_configuration(
     Ok((best_args, best_metric_value, best_logs))
 }
 
-fn show_results(best_args: ParsedArgs, best_metric: f64, logs: Logger, total_size: usize, metric: Metric, stats: &MetricStats) {
+fn show_results(
+    best_args: ParsedArgs,
+    best_metric: f64,
+    logs: Logger,
+    total_size: usize,
+    metric: Metric,
+    stats: &MetricStats,
+) {
     println!("╔═══════════════════════════════════════════════════════╗");
-    println!("║           Best Configuration for {:8} Bytes       ║", total_size);
+    println!(
+        "║           Best Configuration for {:8} Bytes       ║",
+        total_size
+    );
     println!("╠═══════════════════╤═══════════════════════════════════╣");
     println!("║ Cache Parameters  │ Value                             ║");
     println!("╟───────────────────┼───────────────────────────────────╢");
-    println!("║ File              │ {:<33} ║", best_args.file_path.display());
+    println!(
+        "║ File              │ {:<33} ║",
+        best_args.file_path.display()
+    );
     println!("║ Cache Size        │ {:<33} ║", best_args.cache_size);
     println!("║ Block Size        │ {:<33} ║", best_args.block_size);
-    println!("║ Write Policy      │ {:<33} ║", format!("{:?}", best_args.write_policy));
-    println!("║ Write Miss Policy │ {:<33} ║", format!("{:?}", best_args.write_miss_policy));
+    println!(
+        "║ Write Policy      │ {:<33} ║",
+        format!("{:?}", best_args.write_policy)
+    );
+    println!(
+        "║ Write Miss Policy │ {:<33} ║",
+        format!("{:?}", best_args.write_miss_policy)
+    );
     println!("║ Split I/D         │ {:<33} ║", best_args.split_i_d);
     println!("║ Metric Used       │ {:<33} ║", format!("{:?}", metric));
     println!("║ Best Metric Value │ {:<33.6} ║", best_metric);
     println!("╟───────────────────┼───────────────────────────────────╢");
     println!("║ Results           │ Count                             ║");
     println!("╟───────────────────┼───────────────────────────────────╢");
-    println!("║ Instr Refs        │ {:<33} ║", logs.instruction_references);
+    println!(
+        "║ Instr Refs        │ {:<33} ║",
+        logs.instruction_references
+    );
     println!("║ Data Refs         │ {:<33} ║", logs.data_references);
     println!("║ Instr Misses      │ {:<33} ║", logs.instruction_misses);
     println!("║ Data Misses       │ {:<33} ║", logs.data_misses);
@@ -338,6 +374,8 @@ fn print_usage(program_name: &str) {
     eprintln!("  --block-size <size>          Lock block size");
     eprintln!("  --cache-size <size>          Lock cache size");
     eprintln!("  --write-policy <policy>      Lock write policy (writethrough/writeback)");
-    eprintln!("  --write-miss-policy <policy> Lock write miss policy (writeallocate/nowriteallocate)");
+    eprintln!(
+        "  --write-miss-policy <policy> Lock write miss policy (writeallocate/nowriteallocate)"
+    );
     eprintln!("  --split-i-d <bool>           Lock split I/D (true/false)");
 }
