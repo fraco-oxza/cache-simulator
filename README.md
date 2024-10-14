@@ -17,8 +17,8 @@ If you want to compile the project yourself, follow these steps:
    First, clone the repository to your local machine:
 
    ```bash
-   git clone <repository_url>
-   cd <repository_directory>
+   git clone https://github.com/fraco-oxza/cache-simulator
+   cd cache-simulator
    ```
 
 2. **Build the Project**  
