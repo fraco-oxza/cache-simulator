@@ -374,8 +374,6 @@ fn print_usage(program_name: &str) {
     eprintln!("  -bs <size>          Lock block size");
     eprintln!("  -cs <size>          Lock cache size");
     eprintln!("  -wp <policy>      Lock write policy (writethrough/writeback)");
-    eprintln!(
-        "  -wmp <policy> Lock write miss policy (writeallocate/nowriteallocate)"
-    );
+    eprintln!("  -wmp <policy> Lock write miss policy (writeallocate/nowriteallocate)");
     eprintln!("  -split <bool>           Lock split I/D (true/false)");
 }
