@@ -56,9 +56,11 @@ impl Cache {
 
         if block.valid && block.is_match(tag) {
             // HIT
-            match write_policy {
-                WriteThrough => self.memory_write_word(),
-                WriteBack => block.dirty = true,
+            if let Write = access_type {
+                match write_policy {
+                    WriteThrough => self.memory_write_word(),
+                    WriteBack => block.dirty = true,
+                }
             }
 
             self.log.borrow_mut().hit();
