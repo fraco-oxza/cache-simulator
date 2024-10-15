@@ -47,8 +47,12 @@ impl Cache {
     }
 
     pub fn access(&mut self, access_type: AccessType, address: MemoryAddress) {
-        self.log.borrow_mut().reference(&access_type);
+        let rc_log = Rc::clone(&self.log);
+        let mut log = rc_log.borrow_mut();
 
+        log.reference(&access_type);
+
+        let bs = self.block_size as u128;
         let write_policy = self.write_policy;
         let on_write_miss = self.on_write_miss;
         let tag = self.map_strategy.get_tag(address);
@@ -58,67 +62,35 @@ impl Cache {
             // HIT
             if let Write = access_type {
                 match write_policy {
-                    WriteThrough => self.memory_write_word(),
+                    WriteThrough => log.memory_write(1),
                     WriteBack => block.dirty = true,
                 }
             }
 
-            self.log.borrow_mut().hit();
+            log.hit();
             return;
         }
 
         // MISS
-        match (access_type, write_policy, on_write_miss) {
-            (Read(_), WriteThrough, _) => {
+        match (access_type, on_write_miss) {
+            (Read(_), _) | (Write, WriteAllocate) => {
                 block.tag = tag;
                 block.valid = true;
-                self.memory_read_block();
-            }
-            (Read(_), WriteBack, _) => {
-                block.tag = tag;
-                let was_valid = block.valid;
-                block.valid = true;
-                block.dirty = false;
 
-                if was_valid && block.dirty {
-                    self.memory_write_block();
+                if matches!(write_policy, WriteBack) && block.valid && block.dirty {
+                    log.memory_write(bs);
                 }
 
-                self.memory_read_block();
+                log.memory_read(bs);
+                block.dirty = matches!(access_type, Write);
             }
-            (Write, _, NoWriteAllocate) => {
-                self.memory_write_word();
-            }
-            (Write, WriteThrough, WriteAllocate) => {
-                block.tag = tag;
-                block.valid = true;
-                self.memory_read_block();
-                self.memory_write_word();
-            }
-            (Write, WriteBack, WriteAllocate) => {
-                block.tag = tag;
-                block.valid = true;
-                block.dirty = true;
-
-                self.memory_read_block();
-                self.memory_write_block();
+            (Write, NoWriteAllocate) => {
+                log.memory_write(1);
             }
         }
 
-        self.log.borrow_mut().miss(&access_type);
-        self.log.borrow_mut().hit();
-    }
-
-    fn memory_write_word(&mut self) {
-        self.log.borrow_mut().memory_write(1);
-    }
-
-    fn memory_read_block(&mut self) {
-        self.log.borrow_mut().memory_read(self.block_size as u128);
-    }
-
-    fn memory_write_block(&mut self) {
-        self.log.borrow_mut().memory_write(self.block_size as u128);
+        log.miss(&access_type);
+        log.hit();
     }
 }
 
