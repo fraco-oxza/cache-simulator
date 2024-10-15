@@ -117,7 +117,7 @@ grid-search <metric> <trace_file> [options]
   - `-bs <size>`: Lock the block size to the specified value.
   - `-cs <size>`: Lock the cache size to the specified value.
   - `-wp <policy>`: Lock the write policy. Options are `writethrough` and `writeback`.
-  - `--wmp <policy>`: Lock the write miss policy. Options are `writeallocate` and `nowriteallocate`.
+  - `-wmp <policy>`: Lock the write miss policy. Options are `writeallocate` and `nowriteallocate`.
   - `-split <bool>`: Lock whether to split the cache for instructions and data. Options are `true` and `false`.
 
 #### Example
